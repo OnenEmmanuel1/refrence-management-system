@@ -1,0 +1,71 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar', { activeTab: 'dashboard' }) %>
+
+<div class="href-main-content">
+  <%- include('partials/navbar') %>
+
+  <main class="href-container">
+    <div class="mb-4">
+      <h1 style="font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em; margin: 0;">Specialist Dashboard</h1>
+      <p style="color: var(--href-color-text-muted); margin: 0; font-size: 0.9rem;">Review and process incoming hospital referrals assigned to your department.</p>
+    </div>
+
+    <% if (error) { %>
+      <div class="href-alert href-alert-danger">
+        <%= error %>
+      </div>
+    <% } %>
+    <% if (success) { %>
+      <div class="href-alert href-alert-success">
+        <%= success %>
+      </div>
+    <% } %>
+
+    <div class="href-card">
+      <h2 class="href-card-title">Incoming Referrals</h2>
+      
+      <% if (incomingReferences.length === 0) { %>
+        <div style="text-align: center; padding: var(--href-spacing-xl) 0; color: var(--href-color-text-muted);">
+          No incoming referrals assigned to your department at this time.
+        </div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="href-table">
+            <thead>
+              <tr>
+                <th>Referral ID</th>
+                <th>Patient Name</th>
+                <th>Source Department</th>
+                <th>Current Status</th>
+                <th>Date Received</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% incomingReferences.forEach(ref => { %>
+                <tr>
+                  <td><%= ref.id %></td>
+                  <td><strong><%= ref.patient_name %></strong></td>
+                  <td><%= ref.source_dept_name %></td>
+                  <td>
+                    <span class="href-badge href-badge-<%= ref.current_status.toLowerCase().replace(' ', '-') %>">
+                      <%= ref.current_status %>
+                    </span>
+                  </td>
+                  <td><%= new Date(ref.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
+                  <td style="text-align: right;">
+                    <a href="/references/<%= ref.id %>" class="href-btn href-btn-primary" style="padding: 6px 12px; font-size: 0.8rem;">
+                      Review & Act
+                    </a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </main>
+</div>
+
+<%- include('partials/footer') %>

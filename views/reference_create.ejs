@@ -1,0 +1,125 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar', { activeTab: 'lookup' }) %>
+
+<div class="href-main-content">
+  <%- include('partials/navbar') %>
+
+  <main class="href-container">
+    <div class="mb-4">
+      <h1 style="font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em; margin: 0;">Initiate Referral</h1>
+      <p style="color: var(--href-color-text-muted); margin: 0; font-size: 0.9rem;">Submit a formal clinical referral to another medical department.</p>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-8">
+        <% if (patient) { %>
+          <!-- Patient Info Card -->
+          <div class="href-card" style="border-left: 4px solid var(--href-color-primary);">
+            <h2 class="href-card-title">Patient Profile</h2>
+            <div class="row">
+              <div class="col-md-6 mb-2">
+                <span class="href-label" style="display: inline; color: var(--href-color-text-muted);">Patient ID:</span>
+                <strong><%= patient.id %></strong>
+              </div>
+              <div class="col-md-6 mb-2">
+                <span class="href-label" style="display: inline; color: var(--href-color-text-muted);">Name:</span>
+                <strong><%= patient.name %></strong>
+              </div>
+              <div class="col-md-6 mb-2">
+                <span class="href-label" style="display: inline; color: var(--href-color-text-muted);">Date of Birth:</span>
+                <strong><%= new Date(patient.dob).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) %></strong>
+              </div>
+              <div class="col-md-6 mb-2">
+                <span class="href-label" style="display: inline; color: var(--href-color-text-muted);">Gender:</span>
+                <strong><%= patient.gender %></strong>
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Referral Form -->
+        <div class="href-card">
+          <form id="hrefCreateRefForm" enctype="multipart/form-data">
+            <% if (patient) { %>
+              <input type="hidden" name="patientId" value="<%= patient.id %>">
+            <% } else { %>
+              <div class="href-form-group">
+                <label for="patientId" class="href-label">Select Patient</label>
+                <select id="patientId" name="patientId" class="href-select" required>
+                  <option value="" disabled selected>Select a Patient</option>
+                  <% patients.forEach(p => { %>
+                    <option value="<%= p.id %>"><%= p.name %> (DOB: <%= new Date(p.dob).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) %>)</option>
+                  <% }) %>
+                </select>
+              </div>
+            <% } %>
+            
+            <div class="href-form-group">
+              <label for="destDeptId" class="href-label">Destination Specialty/Department</label>
+              <select id="destDeptId" name="destDeptId" class="href-select" required>
+                <option value="" disabled selected>Select Destination Department</option>
+                <% departments.forEach(dept => { %>
+                  <option value="<%= dept.id %>"><%= dept.name %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="href-form-group">
+              <label for="reason" class="href-label">Clinical Reason & Observations</label>
+              <textarea id="reason" name="reason" class="href-textarea" rows="6" placeholder="Provide details of symptoms, diagnosis query, and clinical urgency..." required></textarea>
+            </div>
+
+            <div class="href-form-group">
+              <label for="attachments" class="href-label">Clinical Documentation (Upload files)</label>
+              <input type="file" id="attachments" name="attachments" class="href-input" multiple>
+              <span style="font-size: 0.75rem; color: var(--href-color-text-muted); display: block; margin-top: 4px;">
+                Upload supporting files like ECG prints, lab reports, scans. Maximum 5 files.
+              </span>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+              <a href="/patients/lookup" class="href-btn href-btn-secondary">Back</a>
+              <button type="submit" class="href-btn href-btn-primary">Initiate Referral</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  document.getElementById('hrefCreateRefForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Creating referral...';
+
+    const formData = new FormData(e.target);
+
+    try {
+      const res = await fetch('/api/references', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to submit referral.');
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Initiate Referral';
+        return;
+      }
+
+      alert('Clinical referral initialized successfully!');
+      window.location.href = '/dashboard';
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred during referral submission.');
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Initiate Referral';
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>

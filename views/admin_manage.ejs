@@ -1,0 +1,306 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar', { activeTab: 'manage' }) %>
+
+<div class="href-main-content">
+  <%- include('partials/navbar') %>
+
+  <main class="href-container">
+    <div class="mb-4">
+      <h1 style="font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em; margin: 0;">System Management</h1>
+      <p style="color: var(--href-color-text-muted); margin: 0; font-size: 0.9rem;">Manage hospital departments and staff members.</p>
+    </div>
+
+    <!-- Alert Placeholders -->
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="href-alert href-alert-danger">
+        <%= error %>
+      </div>
+    <% } %>
+    <% if (typeof success !== 'undefined' && success) { %>
+      <div class="href-alert href-alert-success">
+        <%= success %>
+      </div>
+    <% } %>
+
+    <div class="row">
+      <!-- Departments Column -->
+      <div class="col-lg-4 col-md-12 mb-4">
+        <!-- Add Department Form -->
+        <div class="href-card mb-4">
+          <h2 class="href-card-title">Add Department</h2>
+          <form id="hrefAddDeptForm">
+            <div class="href-form-group">
+              <label for="deptName" class="href-label">Department Name</label>
+              <input type="text" id="deptName" name="name" class="href-input" placeholder="e.g. Neurology" required>
+            </div>
+            <button type="submit" class="href-btn href-btn-primary w-100 mt-2">
+              Create Department
+            </button>
+          </form>
+        </div>
+
+        <!-- Departments List -->
+        <div class="href-card">
+          <h2 class="href-card-title">Active Departments</h2>
+          <div class="table-responsive">
+            <table class="href-table">
+              <thead>
+                <tr>
+                  <th style="width: 80px;">ID</th>
+                  <th>Department Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (departments && departments.length > 0) { %>
+                  <% departments.forEach(dept => { %>
+                    <tr>
+                      <td><%= dept.id %></td>
+                      <td><strong><%= dept.name %></strong></td>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="2" class="text-center text-muted">No departments configured.</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workers Column -->
+      <div class="col-lg-8 col-md-12 mb-4">
+        <!-- Add Worker Form -->
+        <div class="href-card mb-4">
+          <h2 class="href-card-title">Add Staff Member / Worker</h2>
+          <form id="hrefAddWorkerForm">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="href-form-group">
+                  <label for="workerName" class="href-label">Full Name</label>
+                  <input type="text" id="workerName" name="name" class="href-input" placeholder="Dr. Sarah Connor" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="href-form-group">
+                  <label for="workerEmail" class="href-label">Work Email</label>
+                  <input type="email" id="workerEmail" name="email" class="href-input" placeholder="sarah.connor@hospital.com" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="href-form-group">
+                  <label for="workerPassword" class="href-label">Password</label>
+                  <input type="password" id="workerPassword" name="password" class="href-input" placeholder="••••••••" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="href-form-group">
+                  <label for="workerRole" class="href-label">System Role</label>
+                  <select id="workerRole" name="role" class="href-select" required>
+                    <option value="" disabled selected>Select Role</option>
+                    <option value="doctor">Doctor (Clinical - Submits Referrals)</option>
+                    <option value="specialist">Specialist (Clinical - Resolves Referrals)</option>
+                    <option value="receptionist">Receptionist (Admin - Registers Patients)</option>
+                    <option value="admin">Administrator (System Overview & Management)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="href-form-group" id="workerDeptGroup">
+              <label for="workerDeptId" class="href-label">Assigned Department</label>
+              <select id="workerDeptId" name="department_id" class="href-select">
+                <option value="" selected>No Department (Required for Doctors/Specialists)</option>
+                <% departments.forEach(dept => { %>
+                  <option value="<%= dept.id %>"><%= dept.name %></option>
+                <% }) %>
+              </select>
+              <span style="font-size: 0.75rem; color: var(--href-color-text-muted); display: block; margin-top: 4px;">
+                Required for Clinical roles (Doctor / Specialist) to route referrals correctly.
+              </span>
+            </div>
+
+            <div class="d-flex justify-content-end mt-2">
+              <button type="submit" class="href-btn href-btn-primary">
+                Add Staff Member
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Workers List -->
+        <div class="href-card">
+          <h2 class="href-card-title">Staff Members Directory</h2>
+          <div class="table-responsive">
+            <table class="href-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Department</th>
+                  <th style="text-align: right; width: 100px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (workers && workers.length > 0) { %>
+                  <% workers.forEach(w => { %>
+                    <tr>
+                      <td><strong><%= w.name %></strong></td>
+                      <td><%= w.email %></td>
+                      <td>
+                        <span class="href-navbar-role-tag" style="float: none; display: inline-block;">
+                          <%= w.role %>
+                        </span>
+                      </td>
+                      <td><%= w.department_name ? w.department_name : '—' %></td>
+                      <td style="text-align: right;">
+                        <% if (typeof currentUser !== 'undefined' && currentUser && w.id !== currentUser.id) { %>
+                          <button class="href-btn href-btn-danger delete-worker-btn" data-id="<%= w.id %>" data-name="<%= w.name %>" style="padding: 4px 8px; font-size: 0.75rem;">
+                            Delete
+                          </button>
+                        <% } else { %>
+                          <span style="font-size: 0.75rem; color: var(--href-color-text-muted);">Current User</span>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="5" class="text-center text-muted">No staff configured.</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Dynamically toggle department input requirement based on selected role
+  const roleSelect = document.getElementById('workerRole');
+  const deptSelect = document.getElementById('workerDeptId');
+  const deptGroup = document.getElementById('workerDeptGroup');
+
+  roleSelect.addEventListener('change', () => {
+    const role = roleSelect.value;
+    if (role === 'doctor' || role === 'specialist') {
+      deptSelect.required = true;
+      deptGroup.style.opacity = '1';
+      deptSelect.disabled = false;
+    } else {
+      deptSelect.required = false;
+      deptSelect.value = '';
+      deptGroup.style.opacity = '0.5';
+      deptSelect.disabled = true;
+    }
+  });
+
+  // Handle department creation submission
+  document.getElementById('hrefAddDeptForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('deptName').value.trim();
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    
+    try {
+      const res = await fetch('/api/admin/departments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to create department.');
+        submitBtn.disabled = false;
+        return;
+      }
+      alert('Department created successfully!');
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred.');
+      submitBtn.disabled = false;
+    }
+  });
+
+  // Handle worker creation submission
+  document.getElementById('hrefAddWorkerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('workerName').value.trim();
+    const email = document.getElementById('workerEmail').value.trim();
+    const password = document.getElementById('workerPassword').value;
+    const role = roleSelect.value;
+    const department_id = deptSelect.value || null;
+
+    if ((role === 'doctor' || role === 'specialist') && !department_id) {
+      alert('Clinical staff must be assigned to a department.');
+      return;
+    }
+
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+
+    try {
+      const res = await fetch('/api/admin/workers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role, department_id })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to add staff member.');
+        submitBtn.disabled = false;
+        return;
+      }
+      alert('Staff member registered successfully!');
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred.');
+      submitBtn.disabled = false;
+    }
+  });
+
+  // Handle staff deletion
+  document.querySelectorAll('.delete-worker-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const id = btn.getAttribute('data-id');
+      const name = btn.getAttribute('data-name');
+      
+      if (!confirm(`Are you sure you want to permanently remove staff member "${name}"? This action cannot be undone.`)) {
+        return;
+      }
+      
+      btn.disabled = true;
+      try {
+        const res = await fetch(`/api/admin/workers/${id}`, {
+          method: 'DELETE'
+        });
+        const data = await res.json();
+        
+        if (!res.ok) {
+          alert(data.error || 'Failed to delete staff member.');
+          btn.disabled = false;
+          return;
+        }
+        
+        alert('Staff member removed successfully.');
+        window.location.reload();
+      } catch (err) {
+        console.error(err);
+        alert('An error occurred while deleting staff member.');
+        btn.disabled = false;
+      }
+    });
+  });
+</script>
+
+<%- include('partials/footer') %>

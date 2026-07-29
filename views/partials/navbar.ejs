@@ -1,0 +1,46 @@
+<header class="href-navbar">
+  <div>
+    <a href="/dashboard" style="text-decoration: none; color: var(--href-color-secondary); font-weight: 800; font-size: 1.35rem; letter-spacing: -0.04em;">
+      Refer<span style="color: var(--href-color-primary);">Track</span>
+    </a>
+  </div>
+  
+  <div class="href-navbar-user">
+    <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+      <div style="text-align: right; line-height: 1.2;">
+        <div style="font-weight: 600; font-size: 0.9rem;"><%= currentUser.name %></div>
+        <div style="font-size: 0.775rem; color: var(--href-color-text-muted);">
+          <%= currentUser.department_name ? currentUser.department_name : 'No Department' %>
+        </div>
+      </div>
+      
+      <span class="href-navbar-role-tag">
+        <%= currentUser.role %>
+      </span>
+
+      <!-- Notifications Indicator -->
+      <div style="position: relative;">
+        <button id="hrefNotifBell" class="href-bell-btn" title="View Notifications">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <div id="hrefBellBadge" class="href-bell-badge" style="display: none;"></div>
+        </button>
+        
+        <!-- Dropdown drawer -->
+        <div id="hrefNotifDrawer" class="href-notif-drawer">
+          <div class="href-notif-header">
+            <span class="href-notif-title">In-App Alerts</span>
+          </div>
+          <div id="hrefNotifList" class="href-notif-list">
+            <div class="href-notif-empty">No new notifications</div>
+          </div>
+        </div>
+      </div>
+
+      <a href="/logout" class="href-btn href-btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
+        Logout
+      </a>
+    <% } %>
+  </div>
+</header>

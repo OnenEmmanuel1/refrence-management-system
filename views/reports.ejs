@@ -1,0 +1,188 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar', { activeTab: 'reports' }) %>
+
+<div class="href-main-content">
+  <%- include('partials/navbar') %>
+
+  <main class="href-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 style="font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em; margin: 0;">Clinical Reports & Analytics</h1>
+        <p style="color: var(--href-color-text-muted); margin: 0; font-size: 0.9rem;">Analyze referral turnaround times, workloads, and routing dynamics.</p>
+      </div>
+      <div>
+        <a href="/api/reports/csv" class="href-btn href-btn-primary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="margin-right: var(--href-spacing-xs);">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Export CSV Spreadsheet
+        </a>
+      </div>
+    </div>
+
+    <!-- Overall turnaround metric -->
+    <div class="href-card" style="border-left: 4px solid var(--href-color-primary);">
+      <div style="font-size: 0.8rem; font-weight: 600; color: var(--href-color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--href-spacing-xs);">Average Referral Turnaround Time</div>
+      <div id="hrefAvgTurnaround" style="font-size: 2.25rem; font-weight: 800; color: var(--href-color-text-main); letter-spacing: -0.03em;">Calculating...</div>
+      <div style="font-size: 0.775rem; color: var(--href-color-text-muted); margin-top: 4px;">Average time elapsed from referral creation (Pending) to mark-resolved (Resolved).</div>
+    </div>
+
+    <div class="row">
+      <!-- Workload Analysis -->
+      <div class="col-lg-6">
+        <div class="href-card">
+          <h2 class="href-card-title">Department Workloads (Incoming Volume)</h2>
+          <div class="table-responsive">
+            <table class="href-table">
+              <thead>
+                <tr>
+                  <th>Department</th>
+                  <th>Total Referrals</th>
+                  <th>Pending</th>
+                  <th>Resolved</th>
+                </tr>
+              </thead>
+              <tbody id="hrefWorkloadBody">
+                <tr><td colspan="4" style="text-align: center;">Loading workloads...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pattern Analysis -->
+      <div class="col-lg-6">
+        <div class="href-card">
+          <h2 class="href-card-title">Referral Patterns (Routing Frequency)</h2>
+          <div class="table-responsive">
+            <table class="href-table">
+              <thead>
+                <tr>
+                  <th>Source Department</th>
+                  <th>Destination Department</th>
+                  <th>Frequency</th>
+                </tr>
+              </thead>
+              <tbody id="hrefPatternsBody">
+                <tr><td colspan="3" style="text-align: center;">Loading patterns...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Individual Turnaround Times -->
+    <div class="href-card">
+      <h2 class="href-card-title">Resolved Referrals Turnaround Breakdown</h2>
+      <div class="table-responsive">
+        <table class="href-table">
+          <thead>
+            <tr>
+              <th>Referral ID</th>
+              <th>Patient</th>
+              <th>Source &rarr; Destination</th>
+              <th>Turnaround Time</th>
+            </tr>
+          </thead>
+          <tbody id="hrefTurnaroundBody">
+            <tr><td colspan="4" style="text-align: center;">Loading turnaround log...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    // Fetch and populate reports data
+    try {
+      // 1. Turnaround Data
+      const resTurnaround = await fetch('/api/reports/turnaround');
+      const dataTurnaround = await resTurnaround.json();
+
+      const avgMinutes = dataTurnaround.averageMinutes;
+      const avgElem = document.getElementById('hrefAvgTurnaround');
+      if (avgMinutes === 0) {
+        avgElem.innerText = 'No Resolved Referrals Yet';
+      } else {
+        const hours = Math.floor(avgMinutes / 60);
+        const mins = Math.round(avgMinutes % 60);
+        avgElem.innerText = `${hours}h ${mins}m`;
+      }
+
+      const turnaroundBody = document.getElementById('hrefTurnaroundBody');
+      turnaroundBody.innerHTML = '';
+      if (dataTurnaround.individual.length === 0) {
+        turnaroundBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--href-color-text-muted);">No resolved referrals record found.</td></tr>';
+      } else {
+        dataTurnaround.individual.forEach(item => {
+          const row = document.createElement('tr');
+          const itemHrs = Math.floor(item.turnaround_minutes / 60);
+          const itemMins = Math.round(item.turnaround_minutes % 60);
+
+          row.innerHTML = `
+            <td>#${item.reference_id}</td>
+            <td><strong>${escapeHtml(item.patient_name)}</strong></td>
+            <td>${escapeHtml(item.source_dept)} &rarr; ${escapeHtml(item.dest_dept)}</td>
+            <td>${itemHrs} hours ${itemMins} minutes</td>
+          `;
+          turnaroundBody.appendChild(row);
+        });
+      }
+
+      // 2. Workload Data
+      const resWorkload = await fetch('/api/reports/workload');
+      const dataWorkload = await resWorkload.json();
+
+      const workloadBody = document.getElementById('hrefWorkloadBody');
+      workloadBody.innerHTML = '';
+      dataWorkload.forEach(dept => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${escapeHtml(dept.department_name)}</strong></td>
+          <td>${dept.referral_count}</td>
+          <td><span class="href-badge href-badge-pending" style="padding: 2px 6px; font-size: 0.7rem;">${dept.pending_count}</span></td>
+          <td><span class="href-badge href-badge-resolved" style="padding: 2px 6px; font-size: 0.7rem;">${dept.resolved_count}</span></td>
+        `;
+        workloadBody.appendChild(row);
+      });
+
+      // 3. Patterns Data
+      const resPatterns = await fetch('/api/reports/patterns');
+      const dataPatterns = await resPatterns.json();
+
+      const patternsBody = document.getElementById('hrefPatternsBody');
+      patternsBody.innerHTML = '';
+      if (dataPatterns.length === 0) {
+        patternsBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--href-color-text-muted);">No referral logs recorded.</td></tr>';
+      } else {
+        dataPatterns.forEach(pattern => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${escapeHtml(pattern.source_department)}</td>
+            <td>${escapeHtml(pattern.destination_department)}</td>
+            <td><strong>${pattern.frequency}</strong> referrals</td>
+          `;
+          patternsBody.appendChild(row);
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error fetching analytics report data.');
+    }
+  });
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+</script>
+
+<%- include('partials/footer') %>

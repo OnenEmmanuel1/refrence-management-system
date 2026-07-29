@@ -1,0 +1,178 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar', { activeTab: 'dashboard' }) %>
+
+<div class="href-main-content">
+  <%- include('partials/navbar') %>
+
+  <main class="href-container">
+    <div class="mb-4">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <a href="/dashboard" style="color: var(--href-color-primary); text-decoration: none; font-size: 0.9rem; font-weight: 500;">&larr; Back to Dashboard</a>
+      </div>
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1 style="font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em; margin: 0;">Referral #<%= reference.id %></h1>
+          <p style="color: var(--href-color-text-muted); margin: 0; font-size: 0.9rem;">Initiated on <%= new Date(reference.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></p>
+        </div>
+        <div>
+          <span class="href-badge href-badge-<%= reference.current_status.toLowerCase().replace(' ', '-') %>" style="font-size: 0.9rem; padding: 6px 14px;">
+            <%= reference.current_status %>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <% if (error) { %>
+      <div class="href-alert href-alert-danger">
+        <%= error %>
+      </div>
+    <% } %>
+    <% if (success) { %>
+      <div class="href-alert href-alert-success">
+        <%= success %>
+      </div>
+    <% } %>
+
+    <div class="row">
+      <!-- Clinical Information -->
+      <div class="col-lg-8">
+        <div class="href-card">
+          <h2 class="href-card-title">Patient Profile</h2>
+          <div class="row mb-3">
+            <div class="col-md-3 col-6 mb-2">
+              <div style="font-size: 0.775rem; color: var(--href-color-text-muted); text-transform: uppercase;">Name</div>
+              <strong style="font-size: 0.95rem;"><%= reference.patient_name %></strong>
+            </div>
+            <div class="col-md-3 col-6 mb-2">
+              <div style="font-size: 0.775rem; color: var(--href-color-text-muted); text-transform: uppercase;">Patient ID</div>
+              <strong style="font-size: 0.95rem;"><%= reference.patient_id %></strong>
+            </div>
+            <div class="col-md-3 col-6 mb-2">
+              <div style="font-size: 0.775rem; color: var(--href-color-text-muted); text-transform: uppercase;">DOB</div>
+              <strong style="font-size: 0.95rem;"><%= new Date(reference.patient_dob).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) %></strong>
+            </div>
+            <div class="col-md-3 col-6 mb-2">
+              <div style="font-size: 0.775rem; color: var(--href-color-text-muted); text-transform: uppercase;">Gender</div>
+              <strong style="font-size: 0.95rem;"><%= reference.patient_gender %></strong>
+            </div>
+          </div>
+          <div style="border-top: 1px solid var(--href-color-border); padding-top: var(--href-spacing-md);">
+            <div style="font-size: 0.775rem; color: var(--href-color-text-muted); text-transform: uppercase; margin-bottom: var(--href-spacing-xs);">Contact Biodata</div>
+            <div style="font-size: 0.9rem; white-space: pre-wrap;"><%= reference.patient_contact %></div>
+          </div>
+        </div>
+
+        <div class="href-card">
+          <h2 class="href-card-title">Clinical Referral details</h2>
+          <div class="row mb-3">
+            <div class="col-sm-6 mb-2">
+              <div style="font-size: 0.775rem; color: var(--href-color-text-muted); text-transform: uppercase;">Referring Clinician</div>
+              <div style="font-size: 0.95rem; font-weight: 500;"><%= reference.creator_name %> (<%= reference.source_dept_name %>)</div>
+            </div>
+            <div class="col-sm-6 mb-2">
+              <div style="font-size: 0.775rem; color: var(--href-color-text-muted); text-transform: uppercase;">Target Department</div>
+              <div style="font-size: 0.95rem; font-weight: 500;"><%= reference.dest_dept_name %></div>
+            </div>
+          </div>
+          
+          <div style="border-top: 1px solid var(--href-color-border); padding-top: var(--href-spacing-md);">
+            <div style="font-size: 0.775rem; color: var(--href-color-text-muted); text-transform: uppercase; margin-bottom: var(--href-spacing-xs);">Reason for Referral</div>
+            <div style="font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap;"><%= reference.reason %></div>
+          </div>
+        </div>
+
+        <!-- Clinical Documents -->
+        <div class="href-card">
+          <h2 class="href-card-title">Supporting Clinical Files</h2>
+          
+          <% if (documents.length === 0) { %>
+            <div style="padding: var(--href-spacing-md) 0; color: var(--href-color-text-muted); font-size: 0.9rem; text-align: center;">
+              No clinical files attached.
+            </div>
+          <% } else { %>
+            <div class="list-group list-group-flush mb-4">
+              <% documents.forEach(doc => { %>
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-3" style="border-bottom: 1px solid var(--href-color-border);">
+                  <div>
+                    <div style="font-size: 0.9rem; font-weight: 500;"><%= doc.filename %></div>
+                    <div style="font-size: 0.75rem; color: var(--href-color-text-muted);">
+                      Uploaded by <%= doc.uploader_name %> on <%= new Date(doc.uploaded_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
+                    </div>
+                  </div>
+                  <div>
+                    <a href="/api/references/<%= reference.id %>/documents/<%= doc.id %>/download" class="href-btn href-btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
+                      Download File
+                    </a>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+
+          <!-- Document Upload Box -->
+          <div style="border-top: 1px solid var(--href-color-border); padding-top: var(--href-spacing-md); margin-top: var(--href-spacing-md);">
+            <form action="/api/references/<%= reference.id %>/documents" method="POST" enctype="multipart/form-data">
+              <label for="attachment" class="href-label">Attach Additional Document</label>
+              <div class="d-flex gap-2">
+                <input type="file" id="attachment" name="attachment" class="href-input" style="padding: 6px 12px;" required>
+                <button type="submit" class="href-btn href-btn-secondary" style="white-space: nowrap;">Upload</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions & Audit Log -->
+      <div class="col-lg-4">
+        <!-- Interactive Actions for Specialist or Admin -->
+        <% if (currentUser.role === 'admin' || (currentUser.role === 'specialist' && currentUser.department_id === reference.dest_dept_id)) { %>
+          <div class="href-card">
+            <h2 class="href-card-title">Manage Referral Status</h2>
+            <div class="d-flex flex-column gap-2">
+              <% if (reference.current_status !== 'In Progress' && reference.current_status !== 'Resolved' && reference.current_status !== 'Rejected') { %>
+                <button onclick="updateReferenceStatus(<%= reference.id %>, 'In Progress')" class="href-btn href-btn-primary w-100">
+                  Accept & Mark In Progress
+                </button>
+              <% } %>
+              
+              <% if (reference.current_status !== 'Resolved' && reference.current_status !== 'Rejected') { %>
+                <button onclick="updateReferenceStatus(<%= reference.id %>, 'Resolved')" class="href-btn w-100" style="background-color: var(--href-bg-resolved); color: var(--href-text-resolved); border: 1px solid #a7f3d0;">
+                  Mark as Resolved
+                </button>
+              <% } %>
+
+              <% if (reference.current_status !== 'Rejected' && reference.current_status !== 'Resolved') { %>
+                <button onclick="updateReferenceStatus(<%= reference.id %>, 'Rejected')" class="href-btn href-btn-danger w-100">
+                  Reject Referral
+                </button>
+              <% } %>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Audit Timeline -->
+        <div class="href-card">
+          <h2 class="href-card-title">Reference Audit Trail</h2>
+          <div class="href-timeline">
+            <% statusLogs.forEach(log => { %>
+              <div class="href-timeline-item">
+                <div class="href-timeline-dot href-dot-<%= log.status.toLowerCase().replace(' ', '-') %>"></div>
+                <div class="href-timeline-content">
+                  <div>Status set to <strong><%= log.status %></strong></div>
+                  <div style="font-size: 0.8rem; color: var(--href-color-text-muted);">
+                    By <%= log.changer_name %> (<%= log.changer_role %>)
+                  </div>
+                  <div class="href-timeline-time">
+                    <%= new Date(log.changed_at).toLocaleString() %>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<%- include('partials/footer') %>

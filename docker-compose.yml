@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: refertrack_db_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_98765
+      MYSQL_DATABASE: refertrack_db
+      MYSQL_USER: refertrack_user
+      MYSQL_PASSWORD: refertrack_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./seed.sql:/docker-entrypoint-initdb.d/2-seed.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "refertrack_user", "-prefertrack_password"]
+      timeout: 10s
+      retries: 5
+
+  app:
+    build: .
+    container_name: refertrack_app_container
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      SESSION_SECRET: refertrack_secure_session_secret_12345
+      DB_HOST: db
+      DB_USER: refertrack_user
+      DB_PASSWORD: refertrack_password
+      DB_NAME: refertrack_db
+      DB_PORT: 3306
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/usr/src/app/uploads
+
+volumes:
+  mysql_data:
