@@ -6,14 +6,14 @@ INSERT INTO departments (id, name) VALUES
 (3, 'General Medicine')
 ON DUPLICATE KEY UPDATE name=VALUES(name);
 
--- Seed Users (Passwords are all bcrypt hash of 'password123': $2b$10$tMhIu7M7B7F2XpY199b5mOrj7ZgU.GveE.Rqyv3bVb/0Uo9t1HjW2)
+-- Seed Users (Passwords are all bcrypt hash of 'password123': $2b$10$tsZ46pATwC7K6ABtz5UcHe1VlKgeD41ZaYfkVIITNShaadjQs1ZJ2)
 INSERT INTO users (id, name, email, password_hash, role, department_id) VALUES
-(1, 'System Administrator', 'admin@refertrack.com', '$2b$10$tMhIu7M7B7F2XpY199b5mOrj7ZgU.GveE.Rqyv3bVb/0Uo9t1HjW2', 'admin', NULL),
-(2, 'Dr. Alice Smith', 'alice.smith@refertrack.com', '$2b$10$tMhIu7M7B7F2XpY199b5mOrj7ZgU.GveE.Rqyv3bVb/0Uo9t1HjW2', 'doctor', 3),
-(3, 'Dr. Bob Johnson', 'bob.johnson@refertrack.com', '$2b$10$tMhIu7M7B7F2XpY199b5mOrj7ZgU.GveE.Rqyv3bVb/0Uo9t1HjW2', 'doctor', 2),
-(4, 'Carol Davis', 'carol.davis@refertrack.com', '$2b$10$tMhIu7M7B7F2XpY199b5mOrj7ZgU.GveE.Rqyv3bVb/0Uo9t1HjW2', 'receptionist', NULL),
-(5, 'Dr. Charles Xavier', 'charles.xavier@refertrack.com', '$2b$10$tMhIu7M7B7F2XpY199b5mOrj7ZgU.GveE.Rqyv3bVb/0Uo9t1HjW2', 'specialist', 1),
-(6, 'Dr. Diana Prince', 'diana.prince@refertrack.com', '$2b$10$tMhIu7M7B7F2XpY199b5mOrj7ZgU.GveE.Rqyv3bVb/0Uo9t1HjW2', 'specialist', 2)
+(1, 'System Administrator', 'admin@refertrack.com', '$2b$10$tsZ46pATwC7K6ABtz5UcHe1VlKgeD41ZaYfkVIITNShaadjQs1ZJ2', 'admin', NULL),
+(2, 'Dr. Alice Smith', 'alice.smith@refertrack.com', '$2b$10$tsZ46pATwC7K6ABtz5UcHe1VlKgeD41ZaYfkVIITNShaadjQs1ZJ2', 'doctor', 3),
+(3, 'Dr. Bob Johnson', 'bob.johnson@refertrack.com', '$2b$10$tsZ46pATwC7K6ABtz5UcHe1VlKgeD41ZaYfkVIITNShaadjQs1ZJ2', 'doctor', 2),
+(4, 'Carol Davis', 'carol.davis@refertrack.com', '$2b$10$tsZ46pATwC7K6ABtz5UcHe1VlKgeD41ZaYfkVIITNShaadjQs1ZJ2', 'receptionist', NULL),
+(5, 'Dr. Charles Xavier', 'charles.xavier@refertrack.com', '$2b$10$tsZ46pATwC7K6ABtz5UcHe1VlKgeD41ZaYfkVIITNShaadjQs1ZJ2', 'specialist', 1),
+(6, 'Dr. Diana Prince', 'diana.prince@refertrack.com', '$2b$10$tsZ46pATwC7K6ABtz5UcHe1VlKgeD41ZaYfkVIITNShaadjQs1ZJ2', 'specialist', 2)
 ON DUPLICATE KEY UPDATE name=VALUES(name), email=VALUES(email), password_hash=VALUES(password_hash), role=VALUES(role), department_id=VALUES(department_id);
 
 -- Seed Patients

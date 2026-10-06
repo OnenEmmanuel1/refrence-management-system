@@ -78,6 +78,12 @@ ReferTrack is a production-ready, three-tier Hospital Reference Management Syste
    ```
 6. The system will be online at [http://localhost:3000](http://localhost:3000).
 
+To apply the schema and load the sample data manually, run:
+
+```bash
+npm run seed
+```
+
 ## Default Seeded Credentials
 
 Use the following email addresses and the shared password **`password123`** to access the system under different roles:

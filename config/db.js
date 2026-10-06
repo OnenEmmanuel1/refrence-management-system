@@ -53,13 +53,16 @@ async function connectWithRetry(retries = 10, delay = 4000) {
 async function autoInitialize() {
   try {
     const [rows] = await pool.query("SHOW TABLES LIKE 'users'");
-    if (rows.length === 0) {
-      console.log('Database tables not found. Initializing schema...');
-      const schemaPath = path.join(__dirname, '..', 'schema.sql');
-      const schemaSql = fs.readFileSync(schemaPath, 'utf8');
-      await pool.query(schemaSql);
-      console.log('Schema initialized successfully.');
+    const needsSeed = rows.length === 0;
 
+    // CREATE TABLE IF NOT EXISTS repairs databases that were only partly initialized.
+    console.log('Checking database schema...');
+    const schemaPath = path.join(__dirname, '..', 'schema.sql');
+    const schemaSql = fs.readFileSync(schemaPath, 'utf8');
+    await pool.query(schemaSql);
+    console.log('Database schema is ready.');
+
+    if (needsSeed) {
       const seedPath = path.join(__dirname, '..', 'seed.sql');
       if (fs.existsSync(seedPath)) {
         console.log('Seeding database...');
@@ -67,11 +70,10 @@ async function autoInitialize() {
         await pool.query(seedSql);
         console.log('Database seeded successfully.');
       }
-    } else {
-      console.log('Database tables verified.');
     }
   } catch (err) {
     console.error('Error during database auto-initialization:', err);
+    throw err;
   }
 }
 
